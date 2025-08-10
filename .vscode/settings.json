@@ -1,0 +1,12 @@
+{
+    "statusbar.commands": [
+        {
+            "text": "$(play) Run Program",
+            "tooltip": "Run run.bat",
+            "command": "workbench.action.tasks.runTask",
+            "arguments": ["Run Program"],
+            "alignment": "left",
+            "priority": 1
+        }
+    ]
+}
