@@ -1,51 +1,48 @@
 package TuringMachines.Engine;
-import java.util.Map;
 
-public class TuringMachine {
-    private Tape tape;
+import java.util.List;
+import java.util.function.Function;
+
+public class TuringMachine<Symbol> {
+    private Tape<Symbol>tape;
     private State currentState;
-    private Map<StateSymbolPair, Transition> transitions;
+    private Transitioner<Symbol> transitioner;
 
-    public TuringMachine(Tape tape, State initialState, Map<StateSymbolPair, Transition> transitions) {
-        this.tape = tape;
-        this.currentState = initialState;
-        this.transitions = transitions;
+    public TuringMachine(String initialStateName, Symbol defaultSymbol, Transitioner<Symbol> transitioner) {
+        this.tape = new Tape<>(defaultSymbol);
+        this.currentState = new State(initialStateName, false);
+        this.transitioner = transitioner;
     }
 
-    public void setHead(int position){
-        tape.setHead(position);
+    public TuringMachine(String initialStateName, Symbol defaultSymbol, String transitionerSpecification, Function<String, Symbol> symbolparser) throws Exception {
+        this.tape = new Tape<>(defaultSymbol);
+        this.currentState = new State(initialStateName, false);
+        this.transitioner = new Transitioner<>(transitionerSpecification, symbolparser);
     }
     
-    public void run() {
-        System.out.println("running turing machine.");
-        while (!currentState.isAccepting()) {
-            System.out.println("Tape: " + tape.stringify(0, 16) + "  Head: " + tape.getHead()+ "  State: " + currentState);
-
-            Boolean symbol;
-            if (currentState.isReadRaw()) {
-                symbol = tape.readRaw(); 
-            } else {
-                symbol = tape.read();    
-            }
-
-            Transition transition = transitions.get(new StateSymbolPair(currentState, symbol));
-
-            if (transition == null) {
-                System.out.println("Error: No transition found. Halting.");
-                break;
-            }
-
-            Boolean writeSymbol = transition.getWriteSymbol();
-            if (writeSymbol != null) {
-                tape.write(writeSymbol);
-            }
-
-            if (transition.getMoveDirection() == Transition.Direction.LEFT)
-                tape.moveLeft();
-            else
-                tape.moveRight();
-
-            currentState = transition.getNextState();
+    public void initializeTape(List<Symbol> symbols, int startHeadPosition) {
+        for (Symbol symbol : symbols) {
+            tape.writeAndMove(symbol, Direction.RIGHT);
         }
+        tape.setHead(startHeadPosition);
     }
+    public boolean step() {
+        Symbol readVal = tape.read();
+        Transitioner.Output<Symbol> transition = transitioner.get(currentState, readVal);
+        tape.writeAndMove(transition.writeSymbol(), transition.moveDirection());
+        currentState = transition.state();
+        return currentState.isAccepting();
+    }
+
+    public String stringify(int tapeStart, int tapeEnd) {
+        return "Current State: " + currentState + ", " + tape.stringify(tapeStart, tapeEnd) + ", Head Position: " + tape.getHead();    
+    }
+    public String toString(){
+        return "Current State: " + currentState + ", " + tape.toString()                    + ", Head Position: " + tape.getHead();    
+    }
+
+    public int countOccurrences(Symbol symbol) {
+        return tape.countOccurrences(symbol);
+    }
+    
 }

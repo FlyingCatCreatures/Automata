@@ -3,66 +3,84 @@ package TuringMachines.Engine;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Tape {
-    private Map<Integer, Boolean> cells = new HashMap<>();
+public class Tape<Symbol> {
+    private Map<Integer, Symbol> cells = new HashMap<>();
     private int head = 0;
-    private boolean defaultSymbol = false;
+    private Symbol defaultSymbol;
 
-    // Constructor for tape with an inputstring containing only 1s and 0s
-    public Tape(String initialState, int start) {
-        for (int i = 0; i < initialState.length(); i++) {
-            cells.put(i+start, initialState.charAt(i) == '1');
-        }
+    // Tracks the leftmost and rightmost access positions
+    // These are not strictly necessary for the tape's functionality, but useful for printing
+    private int leftmostAccess=0, rightmostAccess=0;
+
+    private void updateAccessBounds() {
+        leftmostAccess = Math.min(leftmostAccess, head);
+        rightmostAccess = Math.max(rightmostAccess, head);
     }
 
-    // Constructor for empty tape
-    public Tape() {}
-
-    public Boolean readRaw() {
-        return cells.get(head); // returns null if not written to
+    public Tape(Symbol defaultSymbol) {
+        this(defaultSymbol, 0);
     }
 
-    public boolean read() {
+    public Tape(Symbol defaultSymbol, int headPosition) {
+        head = headPosition;
+        this.defaultSymbol = defaultSymbol;
+    }
+
+    public Symbol read() {
+        updateAccessBounds();
         return cells.getOrDefault(head, defaultSymbol);
     }
 
-    public void write(boolean symbol) {
+    public void writeAndMove(Symbol symbol, Direction direction) {
         cells.put(head, symbol);
+        updateAccessBounds();
+        switch(direction){
+            case LEFT:  head--; break;
+            case RIGHT: head++; break;
+        }
     }
 
-    public void moveLeft() {
-        head--;
-    }
-
-    public void moveRight() {
-        head++;
+    public void setHead(int newHead) {
+        this.head = newHead;
     }
 
     public int getHead() {
         return head;
     }
-    public void setHead(int position){
-        head = position;
+
+    public int getLeftmostAccess() {
+        return leftmostAccess;
     }
 
-    public void setDefaultSymbol(boolean defaultSymbol) {
-        this.defaultSymbol = defaultSymbol;
+    public int getRightmostAccess() {
+        return rightmostAccess;
     }
 
     public String toString(){
-        return stringify(1,10);
+        //return stringify(Math.min(leftmostAccess,1),Math.max(rightmostAccess,10));
+        return stringify(leftmostAccess, rightmostAccess);
     }
 
     public String stringify(int start, int end) {
-        int savedHead = getHead();
         StringBuilder sb = new StringBuilder(end - start);
-
-        for (int pos = start; pos < end; pos++) {
-            Boolean val = cells.get(pos);
-            sb.append(val==null? "_":val? "1": "0");
+        /*sb.append("Tape from position ")
+          .append(start)
+          .append(" to ")
+          .append(end)
+          .append(": ");*/
+        for (int pos = start; pos <= end; pos++) {
+            sb.append(cells.getOrDefault(pos, defaultSymbol));
         }
-
-        setHead(savedHead);
         return sb.toString();
+    }
+
+    public int countOccurrences(Symbol symbol) {
+        int count = 0;
+        for (int pos = leftmostAccess; pos <= rightmostAccess; pos++) {
+            if (cells.getOrDefault(pos, defaultSymbol).equals(symbol)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

@@ -1,35 +1,50 @@
 package TuringMachines;
 import TuringMachines.Engine.*;
-import TuringMachines.Engine.Transition.Direction;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Main {
 
-    public static void main(String[] args) {
-        // Define states
-        State moveRightUntilEnd = new State("MOVE_RIGHT", false, true);  
-        State add1 = new State("add1", false, true);
+    public static void main(String[] args) throws Exception {
+        // Transition spec: increments a unary number (e.g. 111 becomes 1111)
+        String spec = """
+            {A, B, C, D, E}
 
-        State halt  = new State("HALT", true);
+            A 0 -> 1 R B
+            A 1 -> 1 L C
+            B 0 -> 1 R C
+            B 1 -> 1 R B
+            C 0 -> 1 R D
+            C 1 -> 0 L E
+            D 0 -> 1 L A
+            D 1 -> 1 L D
+            E 0 -> 1 R HALT
+            E 1 -> 0 L A
+            """;
 
-        // Setup initial tape value
-        Tape tape = new Tape("00000000000000000", -1); 
-        tape.setDefaultSymbol(false);
+        // Our symbols are integers (0 or 1), so parser converts strings to Integer
+        TuringMachine<Integer> tm = new TuringMachine<>(
+            "A",                  // initial state
+            0,                        // default symbol on the tape
+            spec,                                   // transition specification 
+            Integer::parseInt                       // symbol parser
+        );
 
-        // Define transitions
-        Map<StateSymbolPair, Transition> transitions = new HashMap<>();
-         
-        transitions.put(new StateSymbolPair(moveRightUntilEnd, Boolean.FALSE), new Transition(moveRightUntilEnd, Boolean.FALSE, Direction.RIGHT));
-        transitions.put(new StateSymbolPair(moveRightUntilEnd, Boolean.TRUE), new Transition(moveRightUntilEnd, Boolean.TRUE, Direction.RIGHT));
-        transitions.put(new StateSymbolPair(moveRightUntilEnd, null), new Transition(add1, null, Direction.LEFT));
+        // Manually preload some tape data (111 and startposition at 1)
+        //tm.initializeTape(List.of(1, 1, 1), 1);
 
-        transitions.put(new StateSymbolPair(add1, false), new Transition(moveRightUntilEnd, true, Direction.LEFT));
-        transitions.put(new StateSymbolPair(add1, true), new Transition(add1, false, Direction.LEFT));
-        transitions.put(new StateSymbolPair(add1, null), new Transition(halt, null, Direction.RIGHT));
-
-        TuringMachine tm = new TuringMachine(tape, moveRightUntilEnd, transitions);
-        tm.run();
+        // Run until accepting state (HALT)
+        System.out.println("Running 5-state busy beaver");
+        long startTime = System.nanoTime();
+        int i=1;
+        while (!tm.step()) {
+            i++;
+        }
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
+        System.out.println("Finished after " + i + " steps in " + (duration / 1_000_000) + " ms.");
+        System.out.println("Reached accepting state after " + i + " steps with a total of " + tm.countOccurrences(1) + " ones on the tape.");
     }
 }
