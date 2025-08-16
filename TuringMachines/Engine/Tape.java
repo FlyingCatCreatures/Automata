@@ -1,6 +1,8 @@
 package TuringMachines.Engine;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Tape<Symbol> {
     private ArrayList<Symbol> positive = new ArrayList<>();
@@ -29,41 +31,30 @@ public class Tape<Symbol> {
     }
 
     public Symbol read() {
-        return head>=0 ? getOrDefaultPositive() : getOrDefaultNegative();
+        return head>=0 ? getOrDefault(positive, head) : getOrDefault(negative, -head - 1);
     }
 
     public void writeAndMove(Symbol symbol, int direction) {
         if (head >= 0) {
-            ensurePositiveCapacity(head);
+            ensureCapacity(positive, head);
             positive.set(head, symbol);
         } else {
             int index = -head - 1;
-            ensureNegativeCapacity(index);
+            ensureCapacity(negative, index);
             negative.set(index, symbol);
         }
         head += direction;
         updateAccessBounds();
     }
 
-    private void ensurePositiveCapacity(int index) {
-        while (positive.size() <= index) {
-            positive.add(defaultSymbol);
-        }
+    private void ensureCapacity(List<Symbol> list, int index) {
+        int amtToAdd = (index + 1 - list.size())*2; // double the capacity to avoid frequent resizing
+        if(amtToAdd <= 0) return;
+        list.addAll(Collections.nCopies(amtToAdd, defaultSymbol));
     }
 
-    private void ensureNegativeCapacity(int index) {
-        while (negative.size() <= index) {
-            negative.add(defaultSymbol);
-        }
-    }
-
-    private Symbol getOrDefaultPositive() {
-        return head < positive.size() ? positive.get(head) : defaultSymbol;
-    }
-
-    private Symbol getOrDefaultNegative() {
-        int index = -head - 1;
-        return index<negative.size() ? negative.get(index) : defaultSymbol;
+    private Symbol getOrDefault(List<Symbol> list, int index) {
+        return index < list.size() ? list.get(index) : defaultSymbol;
     }
 
     public void setHead(int newHead) {
@@ -111,8 +102,8 @@ public class Tape<Symbol> {
 
     public int countOccurrences(Symbol symbol) {
         int count = 0;
-        ensurePositiveCapacity(rightmostAccess);
-        ensureNegativeCapacity(-leftmostAccess - 1);
+        ensureCapacity(positive, rightmostAccess);
+        ensureCapacity(negative, -leftmostAccess - 1);
         for (int pos = leftmostAccess; pos <= rightmostAccess; pos++) {
             Symbol currentSymbol;
             if (pos >= 0) {

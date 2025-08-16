@@ -41,7 +41,7 @@ public class Main {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
         long durationMS = duration / 1_000_000;
-        System.out.println("Finished in: " + formatNumber(i) + " steps in " + formatNumber(durationMS) + " ms.");
+        System.out.println("Finished " + formatNumber(i) + " steps in " + formatNumber(durationMS) + " ms.");
         System.out.println("Stepping rate: " + formatNumber(i/durationMS) + " steps/ms");
         System.out.println("Reached accepting state after " + formatNumber(i) + " steps with a total of " + tm.countOccurrences(1) + " ones on the tape.");
     }
