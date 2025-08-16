@@ -40,7 +40,21 @@ public class Main {
         }
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
-        System.out.println("Finished after " + i + " steps in " + (duration / 1_000_000) + " ms.");
-        System.out.println("Reached accepting state after " + i + " steps with a total of " + tm.countOccurrences(1) + " ones on the tape.");
+        long durationMS = duration / 1_000_000;
+        System.out.println("Finished in: " + formatNumber(i) + " steps in " + formatNumber(durationMS) + " ms.");
+        System.out.println("Stepping rate: " + formatNumber(i/durationMS) + " steps/ms");
+        System.out.println("Reached accepting state after " + formatNumber(i) + " steps with a total of " + tm.countOccurrences(1) + " ones on the tape.");
     }
+
+    private static String formatNumber(long n) {
+        double num = (double) n;
+        if (num >= 1_000_000) {
+            return String.format("%.2fM", num / 1_000_000);
+        } else if (num >= 1_000) {
+            return String.format("%.2fk", num / 1_000);
+        } else {
+            return String.format("%.2f", num);
+        }
+    }
+
 }
