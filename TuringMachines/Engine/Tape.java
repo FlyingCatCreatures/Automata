@@ -1,10 +1,10 @@
 package TuringMachines.Engine;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 public class Tape<Symbol> {
-    private Map<Integer, Symbol> cells = new HashMap<>();
+    private ArrayList<Symbol> positive = new ArrayList<>();
+    private ArrayList<Symbol> negative = new ArrayList<>();
     private int head = 0;
     private Symbol defaultSymbol;
 
@@ -24,16 +24,47 @@ public class Tape<Symbol> {
     public Tape(Symbol defaultSymbol, int headPosition) {
         head = headPosition;
         this.defaultSymbol = defaultSymbol;
+        leftmostAccess = headPosition;
+        rightmostAccess = headPosition;
     }
 
     public Symbol read() {
-        return cells.getOrDefault(head, defaultSymbol);
+        if (head >= 0) {
+            if (head < positive.size()) {
+                return positive.get(head);
+            }
+        } else {
+            int index = -head - 1;
+            if (index < negative.size()) {
+                return negative.get(index);
+            }
+        }
+        return defaultSymbol;
     }
 
     public void writeAndMove(Symbol symbol, int direction) {
-        cells.put(head, symbol);
-        head +=direction;
+        if (head >= 0) {
+            ensurePositiveCapacity(head);
+            positive.set(head, symbol);
+        } else {
+            int index = -head - 1;
+            ensureNegativeCapacity(index);
+            negative.set(index, symbol);
+        }
+        head += direction;
         updateAccessBounds();
+    }
+
+    private void ensurePositiveCapacity(int index) {
+        while (positive.size() <= index) {
+            positive.add(defaultSymbol);
+        }
+    }
+
+    private void ensureNegativeCapacity(int index) {
+        while (negative.size() <= index) {
+            negative.add(defaultSymbol);
+        }
     }
 
     public void setHead(int newHead) {
@@ -52,30 +83,47 @@ public class Tape<Symbol> {
         return rightmostAccess;
     }
 
-    public String toString(){
-        //return stringify(Math.min(leftmostAccess,1),Math.max(rightmostAccess,10));
+    public String toString() {
         return stringify(leftmostAccess, rightmostAccess);
     }
 
     public String stringify(int start, int end) {
-        StringBuilder sb = new StringBuilder(end - start);
-        /*sb.append("Tape from position ")
-          .append(start)
-          .append(" to ")
-          .append(end)
-          .append(": ");*/
+        StringBuilder sb = new StringBuilder(end - start + 1);
         for (int pos = start; pos <= end; pos++) {
-            sb.append(cells.getOrDefault(pos, defaultSymbol));
+            Symbol symbol;
+            if (pos >= 0) {
+                if (pos < positive.size()) {
+                    symbol = positive.get(pos);
+                } else {
+                    symbol = defaultSymbol;
+                }
+            } else {
+                int index = -pos - 1;
+                if (index < negative.size()) {
+                    symbol = negative.get(index);
+                } else {
+                    symbol = defaultSymbol;
+                }
+            }
+            sb.append(symbol);
         }
         return sb.toString();
     }
 
     public int countOccurrences(Symbol symbol) {
         int count = 0;
+        ensurePositiveCapacity(rightmostAccess);
+        ensureNegativeCapacity(-leftmostAccess - 1);
         for (int pos = leftmostAccess; pos <= rightmostAccess; pos++) {
-            if (cells.getOrDefault(pos, defaultSymbol).equals(symbol)) {
-                count++;
+            Symbol currentSymbol;
+            if (pos >= 0) {
+                currentSymbol = positive.get(pos);
+            } else {
+                currentSymbol = negative.get(-pos - 1);
             }
+
+            if (currentSymbol.equals(symbol)) count++;
+            
         }
         return count;
     }
