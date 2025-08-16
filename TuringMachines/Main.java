@@ -47,7 +47,7 @@ public class Main {
     }
 
     private static String formatNumber(long n) {
-        double num = (double) n;
+        double num = n;
         if (num >= 1_000_000) {
             return String.format("%.2fM", num / 1_000_000);
         } else if (num >= 1_000) {

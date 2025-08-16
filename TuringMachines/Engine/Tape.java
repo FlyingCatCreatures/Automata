@@ -29,17 +29,7 @@ public class Tape<Symbol> {
     }
 
     public Symbol read() {
-        if (head >= 0) {
-            if (head < positive.size()) {
-                return positive.get(head);
-            }
-        } else {
-            int index = -head - 1;
-            if (index < negative.size()) {
-                return negative.get(index);
-            }
-        }
-        return defaultSymbol;
+        return head>=0 ? getOrDefaultPositive() : getOrDefaultNegative();
     }
 
     public void writeAndMove(Symbol symbol, int direction) {
@@ -65,6 +55,15 @@ public class Tape<Symbol> {
         while (negative.size() <= index) {
             negative.add(defaultSymbol);
         }
+    }
+
+    private Symbol getOrDefaultPositive() {
+        return head < positive.size() ? positive.get(head) : defaultSymbol;
+    }
+
+    private Symbol getOrDefaultNegative() {
+        int index = -head - 1;
+        return index<negative.size() ? negative.get(index) : defaultSymbol;
     }
 
     public void setHead(int newHead) {
