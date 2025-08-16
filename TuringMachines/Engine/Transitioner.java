@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 public class Transitioner<Symbol> {
     public record Input<Symbol>(State state, Symbol readSymbol) {}
-    public record Output<Symbol>(State state, Symbol writeSymbol, Direction moveDirection) {}
+    public record Output<Symbol>(State state, Symbol writeSymbol, int moveDirection) {}
     private Map<Input<Symbol>, Output<Symbol>> transitions;
 
     public Output<Symbol> get(State state, Symbol readSymbol) {
@@ -90,7 +90,7 @@ public class Transitioner<Symbol> {
             
             Symbol readSymbol = symbolparser.apply(readSymbolRaw);
             Symbol writeSymbol = symbolparser.apply(writeSymbolRaw);
-            Direction direction = parseDirection(directionRaw);
+            int direction = parseDirection(directionRaw);
 
             Input<Symbol> input = new Input<>(state, readSymbol);
             Output<Symbol> output = new Output<>(nextState, writeSymbol, direction);
@@ -105,7 +105,7 @@ public class Transitioner<Symbol> {
 
     // ---------- Helpers ----------
 
-    private static Direction parseDirection(String token) throws IllegalArgumentException {
+    private static int parseDirection(String token) throws IllegalArgumentException {
         String t = token.trim().toUpperCase();
         switch (t) {
             case "L": return Direction.LEFT;

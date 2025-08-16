@@ -27,17 +27,13 @@ public class Tape<Symbol> {
     }
 
     public Symbol read() {
-        updateAccessBounds();
         return cells.getOrDefault(head, defaultSymbol);
     }
 
-    public void writeAndMove(Symbol symbol, Direction direction) {
+    public void writeAndMove(Symbol symbol, int direction) {
         cells.put(head, symbol);
+        head +=direction;
         updateAccessBounds();
-        switch(direction){
-            case LEFT:  head--; break;
-            case RIGHT: head++; break;
-        }
     }
 
     public void setHead(int newHead) {
