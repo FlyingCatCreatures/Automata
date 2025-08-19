@@ -19,8 +19,7 @@ public class DFA<Symbol> {
     
     public boolean step() {
         currentState = transitioner.get(currentState, symbolParser.apply(String.valueOf(digest.charAt(headPosition))));
-        headPosition++;
-        return headPosition == digest.length();
+        return ++headPosition == digest.length();
     }
 
     public boolean isAccepting() {

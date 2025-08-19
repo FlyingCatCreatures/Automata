@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class Transitioner<Symbol> {
     private Map<Integer, State> transitions;
     private Map<String, State> statesByName;
-    
+
     public State get(State state, Symbol symbol) {
         return transitions.get(InputHash(state, symbol));
     }
@@ -95,7 +95,7 @@ public class Transitioner<Symbol> {
             }
         }
 
-        this.transitions = Collections.unmodifiableMap(map);
+        this.transitions = map;
     }
 
     // ---------- Helpers ----------
