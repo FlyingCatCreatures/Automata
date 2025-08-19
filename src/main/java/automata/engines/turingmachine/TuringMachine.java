@@ -3,7 +3,9 @@ package automata.engines.turingmachine;
 import java.util.List;
 import java.util.function.Function;
 
-public class TuringMachine<Symbol> {
+import automata.engines.Engine;
+
+public class TuringMachine<Symbol> implements Engine {
     private Tape<Symbol>tape;
     private State currentState;
     private Transitioner<Symbol> transitioner;
@@ -43,6 +45,11 @@ public class TuringMachine<Symbol> {
 
     public int countOccurrences(Symbol symbol) {
         return tape.countOccurrences(symbol);
+    }
+
+    @Override
+    public boolean isAccepting() {
+        return currentState.isAccepting();
     }
     
 }

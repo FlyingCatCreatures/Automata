@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-group = 'com.flyingCatMan.automata'   // change this to your package base
+group = 'com.flyingCatMan.automata'
 version = '1.0'
 
 application {
@@ -15,12 +15,18 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('run') {
     standardInput = System.in
 }
-tasks.named('test') {
+
+tasks.named('test', Test) {
     useJUnitPlatform()
+
+    testLogging {
+        events "passed"
+    }
 }

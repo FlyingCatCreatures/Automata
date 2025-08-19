@@ -1,8 +1,9 @@
 package automata.engines.dfa;
 
 import java.util.function.Function;
+import automata.engines.Engine;
 
-public class DFA<Symbol> {
+public class DFA<Symbol> implements Engine{
     private State currentState;
     private final Transitioner<Symbol> transitioner;
     private final String digest;
