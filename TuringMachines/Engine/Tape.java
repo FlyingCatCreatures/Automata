@@ -48,8 +48,8 @@ public class Tape<Symbol> {
     }
 
     private void ensureCapacity(List<Symbol> list, int index) {
-        int amtToAdd = (index + 1 - list.size())*2; // double the capacity to avoid frequent resizing
-        if(amtToAdd <= 0) return;
+        int amtToAdd = (index + 1 - list.size())+10; // Resize to it new index, plus a little extra to make resizing less frequent
+        if(amtToAdd <= 10) return; // we added 10 above, and we don't want to resize unnecesarily. Otherwise we'd test against amt <= 0
         list.addAll(Collections.nCopies(amtToAdd, defaultSymbol));
     }
 
