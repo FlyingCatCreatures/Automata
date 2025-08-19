@@ -1,4 +1,4 @@
-package DFA.Engine;
+package automata.engines.dfa;
 
 import java.util.function.Function;
 

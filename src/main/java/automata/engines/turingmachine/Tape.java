@@ -1,4 +1,4 @@
-package TuringMachines.Engine;
+package automata.engines.turingmachine;
 
 import java.util.ArrayList;
 import java.util.Collections;

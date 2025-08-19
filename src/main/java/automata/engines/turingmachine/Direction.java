@@ -1,4 +1,4 @@
-package TuringMachines.Engine;
+package automata.engines.turingmachine;
 
 public class Direction {
     public static final int LEFT = -1;

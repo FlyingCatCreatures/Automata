@@ -1,12 +1,5 @@
 {
-    "statusbar.commands": [
-        {
-            "text": "$(play) Run Program",
-            "tooltip": "Run run.bat",
-            "command": "workbench.action.tasks.runTask",
-            "arguments": ["Run Program"],
-            "alignment": "left",
-            "priority": 1
-        }
-    ]
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.import.gradle.enabled": true,
+  "java.import.maven.enabled": false
 }

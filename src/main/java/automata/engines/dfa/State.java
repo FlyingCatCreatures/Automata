@@ -1,5 +1,4 @@
-package TuringMachines.Engine;
-
+package automata.engines.dfa;
 
 public record State(String name, boolean isAccepting) {
     @Override
