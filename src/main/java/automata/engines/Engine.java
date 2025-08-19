@@ -1,12 +1,13 @@
 package automata.engines;
 
-public interface Engine {
-    public boolean step();
-    public String toString();
+import java.util.List;
+
+public interface Engine<Symbol> {
+    public boolean step(Symbol symbol);
     public boolean isAccepting();
-    public default boolean run(){
-        while(!step()){
-            // Do nothing, just keep stepping
+    public default boolean run(List<Symbol> input){
+        for(Symbol symbol: input) {
+            if(step(symbol)) return isAccepting();
         }
         return isAccepting();
     }

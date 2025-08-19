@@ -9,12 +9,16 @@ import java.util.function.Function;
 public class Transitioner<Symbol> {
     private Map<Integer, State> transitions;
     private Map<String, State> statesByName;
-
+    private String initialstateName;
     public State get(State state, Symbol symbol) {
         return transitions.get(InputHash(state, symbol));
     }
     public State get(String name) {
         return statesByName.get(name);
+    }
+    // Returns the initial state of the DFA
+    public State get() {
+        return statesByName.get(initialstateName);
     }
 
     public Transitioner(Map<Integer, State> transitions) {
@@ -64,13 +68,16 @@ public class Transitioner<Symbol> {
             boolean accepting = parseIsAccepting(parts[1].toLowerCase().charAt(0));
             statesByName.putIfAbsent(name, new State(name, accepting));
         }
+        
+        // The second line is the initial state name
+        initialstateName = lines.get(1).trim();
 
         
 
         // Now we parse the transitions for each state.
         // Each line contains exactly one transition of the form: 
         // stateName readSymbol -> nextState
-        for (String line: lines.subList(1, lines.size())) {
+        for (String line: lines.subList(2, lines.size())) {
             String[] parts = line.split("\\s+");
             if (parts.length != 4 || !parts[2].equals("->")) {
                 throw new IllegalArgumentException("Invalid transition format at this line: " + line + "\nExpected format is: stateName readSymbol -> nextState writeSymbol direction");

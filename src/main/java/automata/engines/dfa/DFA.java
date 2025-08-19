@@ -3,24 +3,18 @@ package automata.engines.dfa;
 import java.util.function.Function;
 import automata.engines.Engine;
 
-public class DFA<Symbol> implements Engine{
+public class DFA<Symbol> implements Engine<Symbol>{
     private State currentState;
     private final Transitioner<Symbol> transitioner;
-    private final String digest;
-    private int headPosition;
-    private final Function<String, Symbol> symbolParser;
 
-    public DFA(String initialStateName, String transitionerSpecification, String digest, Function<String, Symbol> symbolparser) throws Exception {
+    public DFA(String transitionerSpecification, Function<String, Symbol> symbolparser) throws Exception {
         this.transitioner = new Transitioner<>(transitionerSpecification, symbolparser);
-        this.currentState = transitioner.get(initialStateName);
-        this.digest = digest;
-        this.symbolParser = symbolparser;
-        this.headPosition = 0;
+        this.currentState = transitioner.get();
     }
     
-    public boolean step() {
-        currentState = transitioner.get(currentState, symbolParser.apply(String.valueOf(digest.charAt(headPosition))));
-        return ++headPosition == digest.length();
+    public boolean step(Symbol symbol) {
+        currentState = transitioner.get(currentState, symbol);
+        return false; // DFA can always take another step, since all states must have a transition for every symbol.
     }
 
     public boolean isAccepting() {
