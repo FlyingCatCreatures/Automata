@@ -1,7 +1,7 @@
 @echo off
 echo Compiling...
 
-for /r TuringMachines %%f in (*.java) do (
+for /r DFA %%f in (*.java) do (
     javac -encoding UTF-8 -d out %%f
 )
 
@@ -12,4 +12,6 @@ if %ERRORLEVEL% neq 0 (
 
 echo Running.
 echo.
-java -cp out TuringMachines.Test
+java -cp out DFA.Main
+
+
