@@ -8,15 +8,17 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class Transitioner<Symbol> {
-    public record Input<Symbol>(State state, Symbol readSymbol) {}
+    public int InputHash(State state, Symbol readSymbol) {
+        return state.hashCode() ^ readSymbol.hashCode();
+    }
     public record Output<Symbol>(State state, Symbol writeSymbol, int moveDirection) {}
-    private Map<Input<Symbol>, Output<Symbol>> transitions;
+    private Map<Integer, Output<Symbol>> transitions;
 
     public Output<Symbol> get(State state, Symbol readSymbol) {
-        return transitions.get(new Input<Symbol>(state, readSymbol));
+        return transitions.get(InputHash(state, readSymbol));
     }
 
-    public Transitioner(Map<Input<Symbol>, Output<Symbol>> transitions) {
+    public Transitioner(Map<Integer, Output<Symbol>> transitions) {
         this.transitions = transitions;
     }
     /*
@@ -39,7 +41,7 @@ public class Transitioner<Symbol> {
                 .filter(s -> !s.isEmpty() && !s.startsWith("#")) // allow comments starting with #
                 .toList();
 
-        Map<Input<Symbol>, Output<Symbol>> map = new LinkedHashMap<>();
+        Map<Integer, Output<Symbol>> map = new LinkedHashMap<>();
         Map<String, State> statesByName = new LinkedHashMap<>();
 
         
@@ -92,7 +94,7 @@ public class Transitioner<Symbol> {
             Symbol writeSymbol = symbolparser.apply(writeSymbolRaw);
             int direction = parseDirection(directionRaw);
 
-            Input<Symbol> input = new Input<>(state, readSymbol);
+            Integer input = InputHash(state, readSymbol);
             Output<Symbol> output = new Output<>(nextState, writeSymbol, direction);
 
             if (map.put(input, output) != null) {
