@@ -29,15 +29,15 @@ public class Transitioner<Symbol> {
     }
 
     /*
-     * Format of transitions is a declaration of states used, along with if they are accepting states, like this:
-     * 'y' means accepting, 'n' means not accepting.
-     * {state1 y, state2 y, state3 n, ...}
-     * 
-     * Followed by a list of transitions, like:
-     * state1 symbol1 -> state2
-     * state1 symbol2 -> state3
-     * etc. etc.
-     * 
+     # Specification format is made up of three parts:
+     #  1. A header line with state names and their acceptance status:
+        {state1 y, state2 y, state3 n, ...}
+     # 2. A line with the initial state name:
+        state2
+     # 3. A list of transitions, one per line:
+        state1 symbol1 -> state2
+        state1 symbol2 -> state3
+     # etc. etc.
      */
     public Transitioner(String Specification, Function<String, Symbol> symbolparser) throws IllegalArgumentException {
         if (Specification == null) throw new IllegalArgumentException("spec is null");
