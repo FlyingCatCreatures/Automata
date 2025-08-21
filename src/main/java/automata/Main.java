@@ -101,19 +101,25 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-        Scanner s = new Scanner(System.in);
-        System.out.println("Choose an engine to run: 1 for Turing Machine, 2 for DFA");
-        int choice = s.nextInt();
-        switch(choice) {
-            case 1:
-                mainTM();
-                break;
-            case 2:
-                mainDFA();
-                break;
-            default:
-                System.out.println("Invalid choice. Please enter 1 or 2.");
+        if(args.length !=1) {
+            System.out.println("Expected one argument: <engine>");
+            System.out.println("Where <engine> is either 'tm' for Turing Machine or 'dfa' for DFA.");
+            System.out.println("Pass engine using --args=\"...\"");
+            return;
         }
-        s.close();
+
+        String engine = args[0].toLowerCase();
+        if(engine.equals("tm")) {
+            mainTM();
+        } else if(engine.equals("dfa")) {
+            mainDFA();
+        } else {
+            System.out.println("Unknown engine: " + engine);
+            System.out.println("Expected one argument: <engine>");
+            System.out.println("Where <engine> is either 'tm' for Turing Machine or 'dfa' for DFA.");
+            System.out.println("Pass engine using --args=\"...\"");
+
+        }
+        
     }
 }

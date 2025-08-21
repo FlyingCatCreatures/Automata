@@ -23,11 +23,25 @@ dependencies {
 
 tasks.named('run') {
     standardInput = System.in
-     jvmArgs = [
-        //"-XX:+UnlockCommercialFeatures", // not needed on newer JDKs
+}
+
+
+tasks.register('profile', JavaExec) {
+    group = 'application'
+    description = 'Run the app with JFR profiling enabled'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = application.mainClass
+
+    standardInput = System.in
+
+    jvmArgs = [
         "-XX:+FlightRecorder",
         "-XX:StartFlightRecording=duration=60s,filename=profile.jfr"
     ]
+
+    // forwards application arguments
+    args = project.hasProperty("appArgs") ? project.appArgs.split(",") : []
 }
 
 tasks.named('test', Test) {
