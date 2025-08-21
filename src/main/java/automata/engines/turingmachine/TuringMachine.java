@@ -5,18 +5,18 @@ import java.util.function.Function;
 
 public class TuringMachine<Symbol> {
     private Tape<Symbol>tape;
-    private State currentState;
+    private String currentState;
     private Transitioner<Symbol> transitioner;
 
     public TuringMachine(String initialStateName, Symbol defaultSymbol, Transitioner<Symbol> transitioner) {
         this.tape = new Tape<>(defaultSymbol);
-        this.currentState = new State(initialStateName, false);
+        this.currentState = initialStateName;
         this.transitioner = transitioner;
     }
 
     public TuringMachine(String initialStateName, Symbol defaultSymbol, String transitionerSpecification, Function<String, Symbol> symbolparser) throws Exception {
         this.tape = new Tape<>(defaultSymbol);
-        this.currentState = new State(initialStateName, false);
+        this.currentState = initialStateName;
         this.transitioner = new Transitioner<>(transitionerSpecification, symbolparser);
     }
     
@@ -31,7 +31,7 @@ public class TuringMachine<Symbol> {
         Transitioner.Output<Symbol> transition = transitioner.get(currentState, readVal);
         tape.writeAndMove(transition.writeSymbol(), transition.moveDirection());
         currentState = transition.state();
-        return currentState.isAccepting();
+        return isAccepting();
     }
 
     public String stringify(int tapeStart, int tapeEnd) {
@@ -46,7 +46,6 @@ public class TuringMachine<Symbol> {
     }
 
     public boolean isAccepting() {
-        return currentState.isAccepting();
+        return currentState.equals("H") || currentState.equals("HALT");
     }
-    
 }

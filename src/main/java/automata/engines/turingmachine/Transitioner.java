@@ -1,23 +1,21 @@
 package automata.engines.turingmachine;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
+import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
+
 public class Transitioner<Symbol> {
-    public record Output<Symbol>(State state, Symbol writeSymbol, int moveDirection) {}
-    private Map<Integer, Output<Symbol>> transitions;
+    public record Output<Symbol>(String state, Symbol writeSymbol, int moveDirection) {}
+    private IntObjectHashMap<Output<Symbol>> transitions;
 
-    public Output<Symbol> get(State state, Symbol readSymbol) {
-        return transitions.get(InputHash(state, readSymbol));
+    public Output<Symbol> get(String state, Symbol readSymbol) {
+        return transitions.get(H(state, readSymbol));
     }
 
-    public Transitioner(Map<Integer, Output<Symbol>> transitions) {
-        this.transitions = transitions;
-    }
     /*
      * Format of transitions is a declaration of states used, like this:
      * {state1, state2, state3, ...}
@@ -38,8 +36,8 @@ public class Transitioner<Symbol> {
                 .filter(s -> !s.isEmpty() && !s.startsWith("#")) // allow comments starting with #
                 .toList();
 
-        Map<Integer, Output<Symbol>> map = new LinkedHashMap<>();
-        Map<String, State> statesByName = new LinkedHashMap<>();
+        transitions = new IntObjectHashMap<>();
+        Set<String> states = new HashSet<>();
 
         
 
@@ -56,13 +54,10 @@ public class Transitioner<Symbol> {
         for (String raw : inside.split(",")) {
             String name = raw.trim();
             if(name.isEmpty()) throw new IllegalArgumentException("Empty state name in header: " + stateHeader);
-            statesByName.putIfAbsent(name, new State(name, false));
+            states.add(name);
         }
-
-        // HALT is not included in the header, so we have to add it explicitly
-        statesByName.putIfAbsent("HALT", new State("HALT", true)); 
-        statesByName.putIfAbsent("H", new State("H", true)); 
-
+        states.add("HALT");
+        states.add("H");
         
 
         // Now we parse the transitions for each state.
@@ -81,25 +76,20 @@ public class Transitioner<Symbol> {
             String directionRaw = parts[4];
             String nextStateName = parts[5];
 
-            State state = statesByName.get(stateName);
-            if (state == null) throw new IllegalArgumentException("State '" + stateName + "' not declared in header");
+            if (!states.contains(stateName)) throw new IllegalArgumentException("String '" + stateName + "' not declared in header");
             
-            State nextState = statesByName.get(nextStateName);
-            if (nextState == null) throw new IllegalArgumentException("Next state '" + nextStateName + "' not declared in header or HALT");
+            if (!states.contains(nextStateName)) throw new IllegalArgumentException("String '" + nextStateName + "' not declared in header");
             
             Symbol readSymbol = symbolparser.apply(readSymbolRaw);
             Symbol writeSymbol = symbolparser.apply(writeSymbolRaw);
             int direction = parseDirection(directionRaw);
 
-            Integer input = InputHash(state, readSymbol);
-            Output<Symbol> output = new Output<>(nextState, writeSymbol, direction);
+            Output<Symbol> output = new Output<>(nextStateName, writeSymbol, direction);
 
-            if (map.put(input, output) != null) {
+            if (transitions.put(H(stateName, readSymbol), output) != null) {
                 throw new IllegalArgumentException("Duplicate transition for (" + stateName + ", " + readSymbolRaw + ")");
             }
         }
-
-        this.transitions = Collections.unmodifiableMap(map);
     }
 
     // ---------- Helpers ----------
@@ -113,7 +103,7 @@ public class Transitioner<Symbol> {
         }
     }
 
-    private int InputHash(State state, Symbol readSymbol) {
-        return state.hashCode() ^ readSymbol.hashCode();
+    private int H(String s1, Symbol s2){
+        return 31 * (31 + s1.hashCode()) + s2.hashCode();
     }
 }
