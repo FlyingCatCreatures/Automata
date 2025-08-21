@@ -1,28 +1,31 @@
 package automata.engines.dfa;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
 
 public class Transitioner<Symbol> {
-    private Map<Integer, State> transitions;
-    private Map<String, State> statesByName;
+    private IntObjectHashMap<String> transitions;
+    private Map<String, Boolean> isAcceptingByName;
+    private Set<String> states;
     private String initialstateName;
-    public State get(State state, Symbol symbol) {
-        return transitions.get(InputHash(state, symbol));
-    }
-    public State get(String name) {
-        return statesByName.get(name);
-    }
-    // Returns the initial state of the DFA
-    public State get() {
-        return statesByName.get(initialstateName);
+
+    public String get(String state, Symbol symbol) {
+        return transitions.get(H(state, symbol));
     }
 
-    public Transitioner(Map<Integer, State> transitions) {
-        this.transitions = transitions;
+    // Returns the initial state of the DFA
+    public String get() {
+        return initialstateName;
+    }
+
+    public boolean isAccepting(String state) {
+        return isAcceptingByName.get(state);
     }
 
     /*
@@ -45,13 +48,11 @@ public class Transitioner<Symbol> {
                 .filter(s -> !s.isEmpty() && !s.startsWith("#")) // allow comments starting with #
                 .toList();
 
-        Map<Integer, State> map = new LinkedHashMap<>();
-        statesByName = new LinkedHashMap<>();
-
-        
+        transitions = new IntObjectHashMap<>();
+        isAcceptingByName = new HashMap<>();
+        states = new HashSet<>();
 
         if (lines.isEmpty()) throw new IllegalArgumentException("Empty transition specification");
-        
 
 
         // First we parse the header line with state names
@@ -64,9 +65,8 @@ public class Transitioner<Symbol> {
             String token = raw.trim();
             String[] parts = token.split("\\s+");
             if (parts.length != 2) throw new IllegalArgumentException("Each state must be followed by 'y' or 'n': " + token);
-            String name = parts[0];
-            boolean accepting = parseIsAccepting(parts[1].toLowerCase().charAt(0));
-            statesByName.putIfAbsent(name, new State(name, accepting));
+            states.add(parts[0]);
+            isAcceptingByName.put(parts[0], parseIsAccepting(parts[1].toLowerCase().charAt(0)));
         }
         
         // The second line is the initial state name
@@ -88,22 +88,17 @@ public class Transitioner<Symbol> {
             // " -> " is a fixed part of the notation so it carries no semantic meaning, so we can skip it
             String nextStateName = parts[3];
 
-            State state = statesByName.get(stateName);
-            if (state == null) throw new IllegalArgumentException("State '" + stateName + "' not declared in header");
+            if (!states.contains(stateName)) throw new IllegalArgumentException("String '" + stateName + "' not declared in header");
             
-            State nextState = statesByName.get(nextStateName);
-            if (nextState == null) throw new IllegalArgumentException("State '" + nextStateName + "' not declared in header");
+            if (!states.contains(nextStateName)) throw new IllegalArgumentException("String '" + nextStateName + "' not declared in header");
             
             Symbol readSymbol = symbolparser.apply(readSymbolRaw);
 
-            if (map.put(InputHash(state, readSymbol), nextState) != null) {
+            if (transitions.put(H(stateName, readSymbol), nextStateName) != null) {
                 throw new IllegalArgumentException("Duplicate transition for (" + stateName + ", " + readSymbolRaw + ")");
             }
         }
-
-        this.transitions = map;
     }
-
     // ---------- Helpers ----------
 
     private static boolean parseIsAccepting(Character c) throws IllegalArgumentException {
@@ -113,8 +108,8 @@ public class Transitioner<Symbol> {
             default:  throw new IllegalArgumentException("Unknown flag for a state found: " + c + " (use y/n)");
         }
     }
-
-    private int InputHash(State state, Symbol readSymbol) {
-        return state.hashCode() ^ readSymbol.hashCode();
+    
+    private int H(String s1, Symbol s2){
+        return 31 * (31 + s1.hashCode()) + s2.hashCode();
     }
 }

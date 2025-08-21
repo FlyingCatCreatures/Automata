@@ -2,7 +2,6 @@ package automata;
 
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.IntStream;
 
 import automata.engines.turingmachine.TuringMachine;
 import automata.util.IntArrayListView;
@@ -69,10 +68,12 @@ public class Main {
             """;
         Engine<Integer> dfa = new DFA<>(spec, Integer::valueOf);
 
-        int length = 10_000_000;
-        int[] inputArr = IntStream.range(0,length)
-                            .map(i -> Math.random() < 0.5 ? 0 : 1)
-                            .toArray();
+        int length = 100_000_000;
+        int[] inputArr = new int[length];
+        for(int i=0; i<length; i++) {
+            // Generate a random input of 0s and 1s
+            inputArr[i] = (int) (Math.random() * 2);
+        }
         List<Integer> inputView = new IntArrayListView(inputArr); // we don't want to actually box the integers because it ruins performance, so we use this view 
 
         System.out.println("Running DFA");

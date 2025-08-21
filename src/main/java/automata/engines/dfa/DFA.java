@@ -4,7 +4,7 @@ import java.util.function.Function;
 import automata.engines.Engine;
 
 public class DFA<Symbol> implements Engine<Symbol>{
-    private State currentState;
+    private String currentState;
     private final Transitioner<Symbol> transitioner;
 
     public DFA(String transitionerSpecification, Function<String, Symbol> symbolparser) throws Exception {
@@ -18,6 +18,6 @@ public class DFA<Symbol> implements Engine<Symbol>{
     }
 
     public boolean isAccepting() {
-        return currentState.isAccepting();
+        return transitioner.isAccepting(currentState);
     }
 }
