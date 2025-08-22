@@ -80,7 +80,7 @@ public class Transitioner<Symbol> {
         for (String line: lines.subList(2, lines.size())) {
             String[] parts = line.split("\\s+");
             if (parts.length != 4 || !parts[2].equals("->")) {
-                throw new IllegalArgumentException("Invalid transition format at this line: " + line + "\nExpected format is: stateName readSymbol -> nextState writeSymbol direction");
+                throw new IllegalArgumentException("Invalid transition format at this line: " + line + "\nExpected format is: stateName readSymbol -> nextState");
             }
 
             String stateName = parts[0];

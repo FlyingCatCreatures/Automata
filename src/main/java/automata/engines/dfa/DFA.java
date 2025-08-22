@@ -17,6 +17,7 @@ public class DFA<Symbol> implements Engine<Symbol>{
         return false; // DFA can always take another step, since all states must have a transition for every symbol.
     }
 
+    // Only works if all symbols have been processed
     public boolean isAccepting() {
         return transitioner.isAccepting(currentState);
     }

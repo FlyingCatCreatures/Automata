@@ -1,12 +1,12 @@
 package automata;
 
 import java.util.List;
-import java.util.Scanner;
 
 import automata.engines.turingmachine.TuringMachine;
 import automata.util.IntArrayListView;
 import automata.engines.Engine;
 import automata.engines.dfa.DFA;
+import automata.engines.nfa.NFA;
 
 
 public class Main {
@@ -89,6 +89,37 @@ public class Main {
         System.out.println("Number of 0s in input: " + zeroes + ", which is " + (zeroes % 3 == 0 ? "a multiple of 3." : "not a multiple of 3."));
     }
 
+    private static void mainNFA () throws Exception {
+        // Transition spec: accepts strings ending with '01'
+        String spec = """
+            {A n, B n, C y}
+            A
+
+            A 0 -> A B
+            A 1 -> A
+            B 1 -> C
+            """;
+
+        Engine<Integer> nfa = new NFA<>(spec, Integer::valueOf);
+
+        int length = 10_000_000;
+        int[] inputArr = new int[length];
+        for (int i = 0; i < length; i++) {
+            inputArr[i] = (int) (Math.random() * 2); // random 0/1
+        }
+        List<Integer> inputView = new IntArrayListView(inputArr);
+
+        System.out.println("Running NFA");
+        long startTime = System.nanoTime();
+        nfa.run(inputView);
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
+        long durationMS = duration / 1_000_000;
+        System.out.println("Finished " + formatNumber(length) + " steps in " + durationMS + " ms.");
+        System.out.println("Stepping rate: " + formatNumber(length/durationMS) + " steps/ms");
+        System.out.println("The input string was " + (nfa.isAccepting() ? "accepted " : "rejected ") + "by the NFA.");
+    }
+    
     private static String formatNumber(long n) {
         double num = n;
         if (num >= 1_000_000) {
@@ -103,7 +134,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         if(args.length !=1) {
             System.out.println("Expected one argument: <engine>");
-            System.out.println("Where <engine> is either 'tm' for Turing Machine or 'dfa' for DFA.");
+            System.out.println("Where <engine> is either 'tm', 'dfa', or 'nfa");
             System.out.println("Pass engine using --args=\"...\"");
             return;
         }
@@ -113,10 +144,12 @@ public class Main {
             mainTM();
         } else if(engine.equals("dfa")) {
             mainDFA();
+        } else if(engine.equals("nfa")) {
+            mainNFA();
         } else {
             System.out.println("Unknown engine: " + engine);
             System.out.println("Expected one argument: <engine>");
-            System.out.println("Where <engine> is either 'tm' for Turing Machine or 'dfa' for DFA.");
+            System.out.println("Where <engine> is either 'tm', 'dfa', or 'nfa");
             System.out.println("Pass engine using --args=\"...\"");
 
         }
