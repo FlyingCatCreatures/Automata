@@ -15,20 +15,17 @@ public class NFA<Symbol> implements Engine<Symbol> {
 
     public NFA(String transitionerSpecification, Function<String, Symbol> symbolparser) throws Exception {
         this.transitioner = new Transitioner<>(transitionerSpecification, symbolparser);
-        String initial = transitioner.get();
-        this.currentStates.add(initial);
-        this.currentStates.addAll(epsilonClosure(Set.of(initial)));
+        this.currentStates = new HashSet<>(epsilonClosure(Set.of(transitioner.get())));
     }
     
     public boolean step(Symbol symbol) {
         HashSet<String> next = new HashSet<>();
 
-        for (String state : currentStates) {
-            String[] dests = transitioner.get(state, symbol);
-            for (String d : dests) {
+        for (String state : currentStates)
+            for (String d : transitioner.get(state, symbol)) 
                 next.add(d);
-            }
-        }
+            
+        
 
         this.currentStates = new HashSet<>(epsilonClosure(next));
         return this.currentStates.isEmpty();
