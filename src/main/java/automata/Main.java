@@ -90,19 +90,38 @@ public class Main {
     }
 
     private static void mainNFA () throws Exception {
-        // Transition spec: accepts strings ending with '01'
+        // Accepts: strings that end on "01" OR have an even number of '1's
         String spec = """
-            {A n, B n, C y}
-            A
+            {S n, P0 y, P1 n, X n, U n, Y y}
+            S
 
-            A 0 -> A B
-            A 1 -> A
-            B 1 -> C
+            # Epsilon split from the start (forces epsilon-closure work)
+            S -> P0 X
+
+            # Branch A: parity of '1's (P0 = even, P1 = odd)
+            P0 0 -> P0
+            P0 1 -> P1
+            P1 0 -> P1
+            P1 1 -> P0
+
+            # Branch B: detect substring "01" at end
+            # X: looking for a 0 that could start "01"
+            # U: have seen a 0; a following 1 completes "01"
+            # Y: once "01" seen, go back to X on next transition
+            X 0 -> U
+            X 1 -> X
+            U 0 -> U
+            U 1 -> Y
+            Y 0 -> X
+            Y 1 -> X
             """;
+
 
         Engine<Integer> nfa = new NFA<>(spec, Integer::valueOf);
 
+
         int length = 10_000_000;
+        
         int[] inputArr = new int[length];
         for (int i = 0; i < length; i++) {
             inputArr[i] = (int) (Math.random() * 2); // random 0/1
@@ -117,6 +136,18 @@ public class Main {
         long durationMS = duration / 1_000_000;
         System.out.println("Finished " + formatNumber(length) + " steps in " + durationMS + " ms.");
         System.out.println("Stepping rate: " + formatNumber(length/durationMS) + " steps/ms");
+
+        int ones = 0;
+        boolean has01 = inputArr[inputArr.length - 2] == 0 && inputArr[inputArr.length - 1] == 1;
+        for (int i = 0; i < inputArr.length; i++) {
+            if (inputArr[i] == 1) {
+                ones++;
+            }
+        }
+
+        boolean expected = has01 || (ones % 2 == 0);
+
+        System.out.println("The input string should have been " + (expected ? "accepted " : "rejected ") + "by the NFA");
         System.out.println("The input string was " + (nfa.isAccepting() ? "accepted " : "rejected ") + "by the NFA.");
     }
     

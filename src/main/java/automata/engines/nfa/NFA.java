@@ -1,7 +1,7 @@
 package automata.engines.nfa;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,11 +11,10 @@ import automata.engines.Engine;
 public class NFA<Symbol> implements Engine<Symbol> {
     private Set<String> currentStates = new HashSet<>();
     private final Transitioner<Symbol> transitioner;
-    private static final String[] EMPTY = new String[0];
 
     public NFA(String transitionerSpecification, Function<String, Symbol> symbolparser) throws Exception {
         this.transitioner = new Transitioner<>(transitionerSpecification, symbolparser);
-        this.currentStates = new HashSet<>(epsilonClosure(Set.of(transitioner.get())));
+        this.currentStates = epsilonClosure(new HashSet<>(Arrays.asList(transitioner.get())));
     }
     
     public boolean step(Symbol symbol) {
@@ -26,8 +25,7 @@ public class NFA<Symbol> implements Engine<Symbol> {
                 next.add(d);
             
         
-
-        this.currentStates = new HashSet<>(epsilonClosure(next));
+        this.currentStates = epsilonClosure(next);
         return this.currentStates.isEmpty();
     }
 
@@ -36,19 +34,14 @@ public class NFA<Symbol> implements Engine<Symbol> {
         return currentStates.stream().anyMatch(transitioner::isAccepting);
     }
 
-    private Set<String> epsilonClosure(Collection<String> states) {
-        Set<String> closure = new HashSet<>(states);
+    private Set<String> epsilonClosure(HashSet<String> states) {
+        HashSet<String> closure = states; // All states passed are in their own epsilon closure
         Deque<String> worklist = new ArrayDeque<>(states);
 
         while (!worklist.isEmpty()) {
-            String state = worklist.pop();
-            String[] epsilons = transitioner.get(state);
-            if (epsilons == null) epsilons = EMPTY;
-
-            for (String e : epsilons) {
-                if (closure.add(e)) {
-                    worklist.push(e);
-                }
+            for (String s : transitioner.get(worklist.pop())) {
+                if (closure.add(s))
+                    worklist.push(s);
             }
         }
         return closure;
